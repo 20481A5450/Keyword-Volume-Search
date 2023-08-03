@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Keyword Search Volume</title>
+    <!-- Include the Chart.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Reset some default styles */
+        body, h1, h2, p {
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Main header styles */
+        h1 {
+            text-align: center;
+            background-color: #ff6666;
+            padding: 10px;
+            color: white;
+        }
+        
+        /* Form styles */
+        form {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        input[type="text"] {
+            padding: 5px;
+            font-size: 16px;
+        }
+        
+        button[type="submit"] {
+            background-color: #ff6666;
+            color: white;
+            padding: 5px 15px;
+            border: none;
+            cursor: pointer;
+        }
+        
+        /* Search results and graph container */
+        .results-container {
+            margin: 20px;
+        }
+        
+        /* Search results list */
+        .search-results {
+            margin-top: 20px;
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .search-results li {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        /* Keyword search count graph */
+        #graph-container {
+            width: 80%;
+            margin: 20px auto;
+        }
+        
+        /* Video details container */
+        .video-details {
+            border: 1px solid #ccc;
+            padding: 20px;
+            margin-top: 20px;
+            background-color: #f9f9f9;
+        }
+        
+        .video-details h3 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .video-details p {
+            margin-bottom: 10px;
+            color: #666;
+        }
+        
+        /* Related videos container */
+        .related-videos {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        /* Video container */
+        .video-container {
+            width: 23%; /* Four videos per row */
+            max-width: 300px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
+        }
+        
+        .video-container iframe {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>YouTube Keyword Search Volume</h1>
+    <form method="POST">
+        <label for="keyword">Enter a keyword:</label>
+        <input type="text" id="keyword" name="keyword" required>
+        <button type="submit">Get Search Volume</button>
+    </form>
+    
+            <div class="results-container">
+                {% if search_results %}
+        <h2>Search Results for "{{ request.form.get('keyword') }}":</h2>
+        <p>Approximate Search Volume: {{ search_volume }}</p>
+        <ul class="search-results">
+            {% for video_id in search_results %}
+            <li>
+                Video ID: {{ video_id }}<br>
+                {% if video_id != "UNKNOWN" %}
+                    <script>
+                        var videoId = "{{ video_id }}";
+                        var apiKey = "AIzaSyC36BG14zOq3IKtceQGWzr9r1SBWv4ujOE";
+                        // Fetch video title using API
+                        fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`)
+                            .then(response => response.json())
+                            .then(data => {
+                                var videoTitle = data.items[0].snippet.title;
+                                document.querySelector("#title_" + "{{ loop.index0 }}").textContent = "Title: " + videoTitle;
+                            })
+                            .catch(error => {
+                                console.error('Error fetching video title:', error);
+                            });
+                    </script>
+                {% else %}
+                    Title: UNKNOWN
+                {% endif %}
+                <span id="title_{{ loop.index0 }}"></span>
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+
+        {% if graph_data %}
+        <h2>Keyword Search Count Over the Past 12 Months:</h2>
+        <div id="graph-container">
+            <canvas id="myChart"></canvas>
+        </div>
+        <script>
+            var graphData = {{ graph_data | tojson | safe }};
+            var months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            var labels = months.slice(-12);
+            var data = graphData;
+
+            var ctx = document.getElementById('myChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Keyword Search Count',
+                        data: data,
+                        fill: false,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true
+                            }
+                        }]
+                    }
+                }
+            });
+        </script>
+        {% endif %}
+        
+        {% if video_details %}
+        <div class="video-details">
+            <h3>Title: {{ video_details.snippet.title }}</h3>
+            <p>Description: {{ video_details.snippet.description }}</p>
+            <p>Published At: {{ video_details.snippet.publishedAt }}</p>
+            <p>Channel Title: {{ video_details.snippet.channelTitle }}</p>
+            <p>View Count: {{ video_details.statistics.viewCount }}</p>
+            <p>Like Count: {{ video_details.statistics.likeCount }}</p>
+            <p>Dislike Count: {{ video_details.statistics.dislikeCount }}</p>
+            <p>Comment Count: {{ video_details.statistics.commentCount }}</p>
+        </div>
+        {% endif %}
+        
+        {% if related_videos %}
+            <h2>Related Videos:</h2>
+            <div class="related-videos">
+                {% for video_data in related_videos %}
+                <div class="video-container">
+                    <h3>{{ video_data.title }}</h3>
+                    <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ video_data.id }}" frameborder="0" allowfullscreen></iframe>
+                    <p>{{ video_data.title }}</p>
+                    <p><a href="https://www.youtube.com/watch?v={{ video_data.id }}" target="_blank">Watch Video</a></p>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+    </div>
+</body>
+</html>
