@@ -4,6 +4,8 @@
     <title>YouTube Keyword Search Volume</title>
     <!-- Include the Chart.js library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
         /* Reset some default styles */
         body, h1, h2, p {
@@ -104,6 +106,16 @@
         .video-container iframe {
             width: 100%;
         }
+        
+        /* Add Bootstrap classes for mobile responsiveness */
+        @media (max-width: 768px) {
+            .results-container {
+                margin: 10px;
+            }
+            .video-container {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
@@ -114,18 +126,19 @@
         <button type="submit">Get Search Volume</button>
     </form>
     
-            <div class="results-container">
-                {% if search_results %}
+    <div class="results-container">
+        {% if search_results %}
         <h2>Search Results for "{{ request.form.get('keyword') }}":</h2>
         <p>Approximate Search Volume: {{ search_volume }}</p>
         <ul class="search-results">
             {% for video_id in search_results %}
             <li>
                 Video ID: {{ video_id }}<br>
+                <p><a href="https://www.youtube.com/watch?v={{ video_id }}" target="_blank">Watch Here</a></p>
                 {% if video_id != "UNKNOWN" %}
                     <script>
                         var videoId = "{{ video_id }}";
-                        var apiKey = "AIzaSyC36BG14zOq3IKtceQGWzr9r1SBWv4ujOE";
+                        var apiKey = "YOUR_YOUTUBE_API_KEY";
                         // Fetch video title using API
                         fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`)
                             .then(response => response.json())
@@ -197,19 +210,18 @@
         {% endif %}
         
         {% if related_videos %}
-            <h2>Related Videos:</h2>
-            <div class="related-videos">
-                {% for video_data in related_videos %}
-                <div class="video-container">
-                    <h3>{{ video_data.title }}</h3>
-                    <iframe width="560" height="315" src="https://www.youtube.com/embed/{{ video_data.id }}" frameborder="0" allowfullscreen></iframe>
-                    <p>{{ video_data.title }}</p>
-                    <p><a href="https://www.youtube.com/watch?v={{ video_data.id }}" target="_blank">Watch Video</a></p>
-                </div>
-                {% endfor %}
+        <h2>Related Videos:</h2>
+        <div class="related-videos row">
+            {% for video_data in related_videos %}
+            <div class="video-container col-md-6 col-lg-4">
+                <h3>{{ video_data.title }}</h3>
+                <iframe width="100%" height="315" src="https://www.youtube.com/embed/{{ video_data.id }}" frameborder="0" allowfullscreen></iframe>
+                <p>{{ video_data.description }}</p>
+                <p><a href="https://www.youtube.com/watch?v={{ video_data.id }}" target="_blank">Watch Video</a></p>
             </div>
-            {% endif %}
-
+            {% endfor %}
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>
