@@ -138,7 +138,7 @@
                 {% if video_id != "UNKNOWN" %}
                     <script>
                         var videoId = "{{ video_id }}";
-                        var apiKey = "YOUR_YOUTUBE_API_KEY";
+                        var apiKey = "AIzaSyC36BG14zOq3IKtceQGWzr9r1SBWv4ujOE";
                         // Fetch video title using API
                         fetch(`https://www.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`)
                             .then(response => response.json())
