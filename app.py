@@ -5,10 +5,10 @@ import random
 
 app = Flask(__name__)
 
-# Set your YouTube API key
+# Setting up YouTube API key
 API_KEY = 'AIzaSyC36BG14zOq3IKtceQGWzr9r1SBWv4ujOE'
 
-# Create a YouTube API client
+# Creating a YouTube API client
 youtube = build('youtube', 'v3', developerKey=API_KEY)
 
 def get_search_results(keyword, max_results=10):
@@ -43,12 +43,12 @@ def estimate_search_volume(video_data):
         likes = int(video_data['statistics'].get('likeCount', 0))
         comments = int(video_data['statistics'].get('commentCount', 0))
         
-        # Relative weights for engagement metrics (you can adjust these weights)
+        # Relative weights for engagement metrics
         view_weight = 0.6
         like_weight = 0.3
         comment_weight = 0.1
         
-        # Calculate estimated search volume based on engagement metrics
+        # Calculating estimated search volume based on engagement metrics
         search_volume = views * view_weight + likes * like_weight + comments * comment_weight
         
         return int(search_volume)
